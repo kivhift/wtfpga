@@ -1,0 +1,11 @@
+--- venv/lib/python3.12/site-packages/vunit/sim_if/ghdl.py	2025-09-19 21:01:09.229358963 -0400
++++ venv-ghdl-v5-JIT-fix/lib/python3.12/site-packages/vunit/sim_if/ghdl.py	2025-09-19 21:03:57.426050935 -0400
+@@ -126,7 +126,7 @@
+         Determine the GHDL backend
+         """
+         mapping = {
+-            r"mcode code generator": "mcode",
++            r"mcode (JIT )?code generator": "mcode",
+             r"llvm (\d+\.\d+\.\d+ )?code generator": "llvm",
+             r"GCC (back-end|\d+\.\d+\.\d+) code generator": "gcc",
+         }
