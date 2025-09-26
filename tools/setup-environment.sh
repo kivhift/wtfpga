@@ -113,7 +113,7 @@ declare -r activation="$script_dir/activate-environment.sh"
 say "Creating activation script"
 echo "
 # Source this file to add GHDL to your path and activate venv
-PATH=$ghdl_install_dir/bin:$PATH
+PATH=$ghdl_install_dir/bin:\$PATH
 source $vunit_dir/venv/bin/activate
 " > "$activation" || die "Had trouble writing activation script"
 
