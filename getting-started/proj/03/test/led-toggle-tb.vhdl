@@ -12,7 +12,8 @@ architecture tb of led_toggle_tb is
     constant HALF_PERIOD: time := 1 ns;
 
     signal clk: std_logic := '0';
-    signal sw, led: std_logic;
+    signal sw: std_logic := '0';
+    signal led: std_logic := '0';
 begin
     clk <= not clk after HALF_PERIOD;
 
@@ -51,6 +52,8 @@ DUT:
 
         wait until falling_edge(clk);
         check_equal(led, '0');
+
+        wait until falling_edge(clk);
 
         test_runner_cleanup(runner);
     end process;

@@ -26,14 +26,16 @@ DUT:
         test_runner_setup(runner, runner_cfg);
 
         for i in 0 to (2 ** input'length) - 1 loop
-            input <= std_logic_vector(to_unsigned(natural(i), input'length));
-            wait for ns;
+            input <= std_logic_vector(to_unsigned(i, input'length));
+            wait for 1 ns;
             if 3 = i then
                 check_equal(output, '1');
             else
                 check_equal(output, '0');
             end if;
         end loop;
+
+        wait for 1 ns;
 
         test_runner_cleanup(runner);
     end process;
