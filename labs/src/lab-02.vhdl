@@ -45,7 +45,7 @@ larson_scanner:
         if rst then
             state := RESET_STATE;
             shift_right := true;
-            dwell_count := to_unsigned(0, dwell_count'length);
+            dwell_count := (others => '0');
         elsif rising_edge(clk) then
             dwell_count := dwell_count + 1;
 
