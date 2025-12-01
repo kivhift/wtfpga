@@ -15,19 +15,50 @@ entity lab_02 is
 end;
 
 architecture bhv of lab_02 is
+    signal u4: unsigned(3 downto 0);
+    signal digit_enable: std_logic_vector(ssd_digit_en'range);
 begin
-    -- The RGB LEDs aren't used but we set them to off regardless.
+    -- These aren't used so set them to off.
     led_r0 <= '0';
     led_g0 <= '0';
     led_b0 <= '0';
     led_r1 <= '0';
     led_g1 <= '0';
     led_b1 <= '0';
-
-    -- These are set to off for now...
-    ssd_abcdefg <= b"111_1111";
     ssd_dp <= '1';
-    ssd_digit_en <= b"1111_1111";
+
+    ssd_digit_en <= digit_enable;
+
+u4_to_ssd:
+    entity work.u4_to_ssd
+        port map (
+            u4 => u4,
+            abcdefg => ssd_abcdefg
+        );
+    u4 <= x"e";
+
+mux_digits:
+    process (clk, rst)
+        constant ONES: bit_vector(digit_enable'left downto 1) := (others => '1');
+
+        variable state: bit_vector(digit_enable'range);
+        variable shift_in: bit;
+        variable dwell_count: unsigned(25 downto 0);
+    begin
+        if rst then
+            state := (others => '1');
+            dwell_count := (others => '0');
+        elsif rising_edge(clk) then
+            dwell_count := dwell_count + 1;
+
+            if 0 = dwell_count then
+                shift_in := '0' when state(state'left downto 1) = ONES else '1';
+                state := shift_in & state(state'left downto 1);
+            end if;
+        end if;
+
+        digit_enable <= to_slv(state);
+    end process;
 
 larson_scanner:
     process (clk, rst)
