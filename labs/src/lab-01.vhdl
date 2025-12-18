@@ -4,7 +4,9 @@ library ieee;
 
 entity lab_01 is
     generic (
-        BLINK_EVERY: positive := 16#2fa_f07f#
+        BLINK_EVERY: positive := 50000000;
+        PWM_PERIOD: positive := 1000000;
+        PWM_DUTY: natural := 5000
     );
     port (
         clk: in std_logic;
@@ -21,25 +23,34 @@ entity lab_01 is
 end;
 
 architecture bhv of lab_01 is
-    constant DELAY_LIMIT: unsigned(25 downto 0) := to_unsigned(BLINK_EVERY, 26);
-    signal delay: unsigned(DELAY_LIMIT'range);
-    signal blink: std_logic;
+    signal blink, rgb_blink, rgb_pwm: std_logic;
 begin
 
-p_blink:
-    process (clk, reset)
-    begin
-        if reset then
-            blink <= '0';
-            delay <= to_unsigned(0, delay'length);
-        elsif rising_edge(clk) then
-            delay <= delay + 1;
-            if DELAY_LIMIT = delay then
-                blink <= not blink;
-                delay <= to_unsigned(0, delay'length);
-            end if;
-        end if;
-    end process;
+blink_pwm:
+    entity work.pulse_width_modulation(rtl)
+        generic map (
+            PERIOD => BLINK_EVERY * 2,
+            DUTY => BLINK_EVERY
+        )
+        port map (
+            clk => clk,
+            rst => reset,
+            en => '1',
+            output => blink
+        );
+
+brightness_pwm:
+    entity work.pulse_width_modulation(rtl)
+        generic map (
+            PERIOD => PWM_PERIOD,
+            DUTY => PWM_DUTY
+        )
+        port map (
+            clk => clk,
+            rst => reset,
+            en => '1',
+            output => rgb_pwm
+        );
 
     led <=
         16x"ffff" when btn_n else
@@ -51,10 +62,11 @@ p_blink:
     ssd_dp <= '0';
     ssd_digit_en <= (others => not (btn_s or blink));
 
-    led_r0 <= blink;
-    led_g0 <= blink;
-    led_b0 <= blink;
-    led_r1 <= blink;
-    led_g1 <= blink;
-    led_b1 <= blink;
+    rgb_blink <= blink and rgb_pwm;
+    led_r0 <= rgb_blink;
+    led_g0 <= rgb_blink;
+    led_b0 <= rgb_blink;
+    led_r1 <= rgb_blink;
+    led_g1 <= rgb_blink;
+    led_b1 <= rgb_blink;
 end;
