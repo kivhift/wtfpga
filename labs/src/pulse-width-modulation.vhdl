@@ -38,7 +38,8 @@ pwm_generate:
         process (clk, rst)
         begin
             if rst then
-                count <= (others => '0');
+                -- Make sure that the output is off when in reset.
+                count <= to_unsigned(limit, count'length);
             elsif rising_edge(clk) then
                 if limit = count then
                     count <= (others => '0');
