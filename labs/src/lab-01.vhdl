@@ -5,8 +5,9 @@ library ieee;
 entity lab_01 is
     generic (
         BLINK_EVERY: positive := 50000000;
-        PWM_PERIOD: positive := 1000000;
-        PWM_DUTY: natural := 5000
+        -- PWM with 10% duty at 1kHz.
+        PWM_PERIOD: positive := 100000;
+        PWM_DUTY: natural := 10000
     );
     port (
         clk: in std_logic;
