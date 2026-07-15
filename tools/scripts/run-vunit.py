@@ -1,32 +1,36 @@
-# There is no shebang since the Python launcher on Windows is a little too
-# smart for its own good. When it's called with the script as its first
-# argument, it inspects the script to see if it contains a shebang line and
-# then tries to find an appropriate interpreter based on some magic if it does.
-# Having "/usr/bin/env python3" along with a venv lead to too much confusion
-# since the launcher didn't find a python3 on the venv path since there is only
-# python. It then tried other directories on the path and found another
-# python3, using that. Of course, that version of python3 did not have vunit
-# installed...
+#!/usr/bin/env python3
+
+# If you are running under a venv and having issues on Windows, remove the
+# shebang. The Python launcher on Windows is a little too smart for its own
+# good. When it's called with the script as its first argument, it inspects the
+# script to see if it contains a shebang line and then tries to find an
+# appropriate interpreter based on some magic if it does. Having "/usr/bin/env
+# python3" along with a venv lead to too much confusion since the launcher
+# didn't find a python3 on the venv path since there is only python. It then
+# tried other directories on the path and found another python3, using that. Of
+# course, that version of python3 did not have vunit installed...
+
+import os
 import pathlib
 import tomllib
 
 from vunit import VUnit, VUnitCLI
 
-def get_source_globs(cfg_file=None):
-    default_globs = 'src/*.vhdl test/*.vhdl'.split()
+# We want this script to the somewhat generic and usable with our tool setup.
+# So, we'll check for our own environment variables, etc., to be able to
+# override defaults and the like.
+cli = VUnitCLI()
+_a = cli.parser.add_argument
+_a(
+    '--rv-src-file',
+    default='vunit-src.toml',
+    help='TOML file with source globs'
+)
+args = cli.parse_args()
 
-    if cfg_file is None:
-        return default_globs
-
-    # Make sure it's a Path(). This does nothing if it is.
-    cfg_file = pathlib.Path(cfg_file)
-    if not cfg_file.exists():
-        raise ValueError(f'Given config file does not exist: {cfg_file}')
-
-    with cfg_file.open('rb') as fin:
-        cfg = tomllib.load(fin)
-
-    return cfg.get('globs', list())
+env = os.environ
+args.output_path = env.get('RV_VUNIT_OUTPUT_PATH') or args.output_path
+args.rv_src_file = env.get('RV_SRC_FILE') or args.rv_src_file
 
 # Oddly, there are ghdl-specific arguments that can be passed. To more-easily
 # be able to automatically add signals to the viewer when requesting a GUI,
@@ -35,7 +39,6 @@ def get_source_globs(cfg_file=None):
 # a simulation option. (GTKWave presents the names more succinctly when dealing
 # with VCDs vs the default.) If we're using Questa or something else, tweaking
 # this shouldn't hurt...
-args = VUnitCLI().parse_args()
 if args.gui:
     args.gtkwave_fmt = 'vcd'
 
@@ -47,11 +50,26 @@ vu.add_vhdl_builtins()
 
 lib = vu.add_library('lib')
 
-# TODO: Since we're using the CLI interface above, we could add an option to
-# feed in the glob or specify a config file that specifies them. This script
-# would thus be more general.
-cfg_file = pathlib.Path('rv.toml')
-for glob in get_source_globs(cfg_file if cfg_file.exists() else None):
+def get_source_globs(cfg_file=None):
+    if cfg_file is None:
+        return 'src/*.vhdl test/*.vhdl'.split()
+
+    # Make sure it's a Path(). This does nothing if it is.
+    cfg_file = pathlib.Path(cfg_file)
+    if not cfg_file.exists():
+        raise ValueError(f'Given config file does not exist: {cfg_file}')
+
+    with cfg_file.open('rb') as fin:
+        cfg = tomllib.load(fin)
+
+    src = cfg.get('source')
+    if src is None:
+        raise ValueError(f'No [source] in {cfg_file}')
+
+    return src.get('globs', list())
+
+src_file = pathlib.Path(args.rv_src_file)
+for glob in get_source_globs(src_file if src_file.exists() else None):
     lib.add_source_files(glob)
 
 if args.gui:
@@ -105,10 +123,9 @@ run -all
 wave zoom full
 '''
 
-
     sim_name = vu.get_simulator_name()
     if sim_name is not None:
-        vunit_out = pathlib.Path('vunit_out')
+        vunit_out = pathlib.Path(args.output_path)
         if 'ghdl' == sim_name:
             script_path = vunit_out / 'add-gtkwave-signals.tcl'
             write_script_and_options(

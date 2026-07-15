@@ -107,10 +107,10 @@ pip install vunit_hdl==$vunit_version || die "Failed to install vunit"
 
 declare -r activation="$script_dir/activate-environment.sh"
 say "Creating activation script"
-echo "
-# Source this file to add GHDL to your path and activate venv
-PATH=$ghdl_install_dir/bin:\$PATH
-source $vunit_dir/venv/bin/activate
-" > "$activation" || die "Had trouble writing activation script"
+echo "# Source this file to add GHDL, etc, to your \$PATH and activate venv
+PATH=$script_dir/scripts:$ghdl_install_dir/bin:\$PATH
+export RV_VUNIT_OUTPUT_PATH=$vunit_dir/out
+source $vunit_dir/venv/bin/activate" > "$activation" ||
+    die "Had trouble writing activation script"
 
 say "Finished setting up tools. Activate environment by sourcing $activation."

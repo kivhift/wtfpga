@@ -1,0 +1,5 @@
+[source]
+globs = [
+    "0*/src/*.vhdl",
+    "0*/test/*.vhdl",
+]
