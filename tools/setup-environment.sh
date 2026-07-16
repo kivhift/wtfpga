@@ -91,6 +91,7 @@ make || die "Had trouble building GHDL"
 make install || die "Had trouble installing GHDL to $ghdl_install_dir"
 
 declare -r vunit_dir="$script_dir/vunit" vunit_version=4.7.1
+declare -r tomli_version=2.4.1
 
 say "Changing to $vunit_dir"
 cd "$vunit_dir" || die "Could not change to $vunit_dir"
@@ -103,14 +104,17 @@ say "Activating venv and installing vunit"
 # complaint about the file not being there.
 # shellcheck disable=SC1091
 source venv/bin/activate || die "Failed to activate venv"
-pip install vunit_hdl==$vunit_version || die "Failed to install vunit"
+python3 -m pip install vunit_hdl==$vunit_version ||
+    die "Failed to install vunit"
+python3 -m pip install "tomli==$tomli_version;python_version<'3.11'" ||
+    die "Failed to install tomli"
 
 declare -r activation="$script_dir/activate-environment.sh"
 say "Creating activation script"
 echo "# Source this file to add GHDL, etc, to your \$PATH and activate venv
 PATH=$script_dir/scripts:$ghdl_install_dir/bin:\$PATH
 export RV_VUNIT_OUTPUT_PATH=$vunit_dir/out
-source $vunit_dir/venv/bin/activate" > "$activation" ||
+. $vunit_dir/venv/bin/activate" > "$activation" ||
     die "Had trouble writing activation script"
 
 say "Finished setting up tools. Activate environment by sourcing $activation."

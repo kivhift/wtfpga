@@ -12,7 +12,12 @@
 
 import os
 import pathlib
-import tomllib
+import sys
+
+if sys.version_info < (3, 11):
+    import tomli as tomllib
+else:
+    import tomllib
 
 from vunit import VUnit, VUnitCLI
 
