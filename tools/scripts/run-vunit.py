@@ -67,11 +67,8 @@ def get_source_globs(cfg_file=None):
     with cfg_file.open('rb') as fin:
         cfg = tomllib.load(fin)
 
-    src = cfg.get('source')
-    if src is None:
-        raise ValueError(f'No [source] in {cfg_file}')
+    return cfg.get('source', list())
 
-    return src.get('globs', list())
 
 src_file = pathlib.Path(args.rv_src_file)
 for glob in get_source_globs(src_file if src_file.exists() else None):

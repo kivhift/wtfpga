@@ -1,5 +1,4 @@
-[source]
-globs = [
+source = [
     "0*/src/*.vhdl",
     "0*/test/*.vhdl",
 ]

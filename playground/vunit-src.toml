@@ -1,4 +1,3 @@
-[source]
-globs = [
+source = [
     "*.vhdl",
 ]
