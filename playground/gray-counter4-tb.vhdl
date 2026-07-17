@@ -40,10 +40,15 @@ UUT:
         wait for 3 * CLK_PERIOD;
         rst <= '0';
 
+        -- Check that we increment as we should.
         for i in gray4_codes'range loop
             wait until falling_edge(clk);
             check_equal(q, gray4_codes(i));
         end loop;
+
+        -- Check that the counter rolls over to the correct value.
+        wait until falling_edge(clk);
+        check_equal(q, gray4_codes(0));
 
         wait for 50 * CLK_PERIOD;
 
