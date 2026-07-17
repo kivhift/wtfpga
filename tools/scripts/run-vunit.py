@@ -29,7 +29,7 @@ _a = cli.parser.add_argument
 _a(
     '--rv-src-file',
     default='vunit-src.toml',
-    help='TOML file with source globs'
+    help='TOML file with source globs',
 )
 args = cli.parse_args()
 
@@ -54,6 +54,7 @@ vu = VUnit.from_args(args, compile_builtins=False, vhdl_standard='2008')
 vu.add_vhdl_builtins()
 
 lib = vu.add_library('lib')
+
 
 def get_source_globs(cfg_file=None):
     if cfg_file is None:
@@ -93,10 +94,10 @@ if args.gui:
             with path.open(mode='w') as fout:
                 fout.write(script)
 
-        for args in (comp_opts or []):
+        for args in comp_opts or list():
             vu.set_compile_option(*args)
 
-        for args in (sim_opts or []):
+        for args in sim_opts or list():
             vu.set_sim_option(*args)
 
     gtkwave_script = r'''set nfacs [gtkwave::getNumFacs]
