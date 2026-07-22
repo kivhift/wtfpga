@@ -1,9 +1,24 @@
 #!/usr/bin/env python3
-#
-# A simple script to produce skeleton VHDL entities and VUnit test benches.
+
+'''
+The purpose of this script is to produce skeleton VHDL entities and VUnit test
+benches. The aim is to reduce friction and boilerplate when working on new
+code. The given entity name will be used directly for both entities and test
+benches. If file output is requested, the file name will be derived from the
+given entity name (<entity>[-tb].vhdl) unless one is explicitly given.
+'''
 
 import argparse
+import contextlib
+import pathlib
 import string
+import sys
+
+
+class HelpFormatter(
+    argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter
+): ...
+
 
 entity = string.Template('''\
 library ieee;
@@ -80,15 +95,43 @@ UUT:
 end;\
 ''')
 
-arg_parser = argparse.ArgumentParser(description='Create skeleton VHDL')
+arg_parser = argparse.ArgumentParser(
+    description='Create new-entity skeleton VHDL',
+    epilog=__doc__,
+    formatter_class=HelpFormatter,
+)
 _a = arg_parser.add_argument
 _a('-e', '--entity', help='Entity name')
 _a('-t', '--test-bench', action='store_true', help='Produce a test bench')
+_a(
+    '-w',
+    '--write',
+    const=True,
+    nargs='?',
+    help='Write to path derived from entity name or given one',
+)
+_a('--clobber', action='store_true', help='Clobber output file if extant')
 args = arg_parser.parse_args()
 
-if args.entity is not None:
-    print(
-        (test_bench if args.test_bench else entity).substitute(
-            entity=args.entity
+if args.entity is None:
+    arg_parser.print_help()
+    sys.exit(0)
+
+if args.write is None:
+    output = contextlib.nullcontext(sys.stdout)
+else:
+    if args.write is True:
+        output_path = pathlib.Path(
+            f'{args.entity}{"-tb" if args.test_bench else ""}.vhdl'
         )
-    )
+    else:
+        output_path = pathlib.Path(args.write)
+
+    if output_path.exists() and not args.clobber:
+        raise SystemExit(f'Not clobbering {output_path}')
+
+    output = output_path.open('w')
+
+template = test_bench if args.test_bench else entity
+with output as outf:
+    print(template.substitute(entity=args.entity), file=outf)
