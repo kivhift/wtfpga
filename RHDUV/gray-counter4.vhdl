@@ -1,5 +1,4 @@
--- From RTL Hardware Design Using VHDL; Listing 9.7.
-
+-- Listing 9.7
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;

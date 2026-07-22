@@ -1,4 +1,4 @@
--- From RTL Hardware Design Using VHDL by Pong P. Chu; Listing 8.12.
+-- Listing 8.12
 library ieee;
     use ieee.std_logic_1164.all, ieee.numeric_std.all;
 
