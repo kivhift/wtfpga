@@ -122,7 +122,8 @@ if args.write is None:
 else:
     if args.write is True:
         output_path = pathlib.Path(
-            f'{args.entity}{"-tb" if args.test_bench else ""}.vhdl'
+            f'{args.entity.replace("_", "-")}'
+            f'{"-tb" if args.test_bench else ""}.vhdl'
         )
     else:
         output_path = pathlib.Path(args.write)
