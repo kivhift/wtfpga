@@ -108,7 +108,7 @@ _a(
     '--write',
     const=True,
     nargs='?',
-    help='Write to path derived from entity name or given one',
+    help='Write to path derived from entity name, given directory or given name',
 )
 _a('--clobber', action='store_true', help='Clobber output file if extant')
 args = arg_parser.parse_args()
@@ -120,13 +120,16 @@ if args.entity is None:
 if args.write is None:
     output = contextlib.nullcontext(sys.stdout)
 else:
+    derived_name = (
+        f'{args.entity.replace("_", "-")}'
+        f'{"-tb" if args.test_bench else ""}.vhdl'
+    )
     if args.write is True:
-        output_path = pathlib.Path(
-            f'{args.entity.replace("_", "-")}'
-            f'{"-tb" if args.test_bench else ""}.vhdl'
-        )
+        output_path = pathlib.Path(derived_name)
     else:
         output_path = pathlib.Path(args.write)
+        if output_path.is_dir():
+            output_path /= derived_name
 
     if output_path.exists() and not args.clobber:
         raise SystemExit(f'Not clobbering {output_path}')
